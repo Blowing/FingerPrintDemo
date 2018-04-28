@@ -16,16 +16,9 @@ import android.widget.TextView;
 
 import com.wujie.fingerprintdemo.base.Constants;
 import com.wujie.fingerprintdemo.google.AuthCallBack;
-import com.wujie.fingerprintdemo.google.CryptoObjectHelper;
+import com.wujie.fingerprintdemo.soter.SoterClient;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
@@ -39,13 +32,17 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private AuthCallBack myAuthCallBack;
     private android.support.v4.os.CancellationSignal cancellationSignal;
 
+    private SoterClient soterClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
         myHandler = new MyHandler(this);
-        initFingerMannager();
+        soterClient = new SoterClient(this, myHandler);
+        soterClient.init();
+        //initFingerMannager();
     }
 
     private void initView() {
@@ -96,6 +93,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     public void showResult(String result) {
         resultTv.setText(result);
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+//            SubscriptionManager manager = SubscriptionManager.from(this);
+//            List<SubscriptionInfo> list = manager.getActiveSubscriptionInfoList();
+//            resultTv.setText(list.size()+"haha");
+//        }
+
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -105,35 +109,38 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             case R.id.btn_ok:
                 cancelBtn.setEnabled(true);
                 okBtn.setEnabled(false);
-                try {
-                    CryptoObjectHelper helper = new CryptoObjectHelper();
-                    if (cancellationSignal == null) {
-                        cancellationSignal = new android.support.v4.os.CancellationSignal();
-                    }
-                    fingerprintManager.authenticate(helper.buildCryptoObject(), 0,
-                            cancellationSignal,  myAuthCallBack, null );
-                } catch (KeyStoreException e) {
-                    e.printStackTrace();
-                } catch (CertificateException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (UnrecoverableKeyException e) {
-                    e.printStackTrace();
-                } catch (NoSuchProviderException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
-                    e.printStackTrace();
-                }
+                soterClient.prepare();
+                soterClient.startAuth();
+//                try {
+//                    CryptoObjectHelper helper = new CryptoObjectHelper();
+//                    if (cancellationSignal == null) {
+//                        cancellationSignal = new android.support.v4.os.CancellationSignal();
+//                    }
+//                    fingerprintManager.authenticate(helper.buildCryptoObject(), 0,
+//                            cancellationSignal,  myAuthCallBack, null );
+//                } catch (KeyStoreException e) {
+//                    e.printStackTrace();
+//                } catch (CertificateException e) {
+//                    e.printStackTrace();
+//                } catch (NoSuchAlgorithmException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } catch (UnrecoverableKeyException e) {
+//                    e.printStackTrace();
+//                } catch (NoSuchProviderException e) {
+//                    e.printStackTrace();
+//                } catch (InvalidAlgorithmParameterException e) {
+//                    e.printStackTrace();
+//                }
 
                 break;
             case R.id.btn_cancel:
                 okBtn.setEnabled(true);
                 cancelBtn.setEnabled(false);
-                cancellationSignal.cancel();
-                cancellationSignal = null;
+                soterClient.cancel();
+//                cancellationSignal.cancel();
+//                cancellationSignal = null;
                 break;
             default:
                 break;
