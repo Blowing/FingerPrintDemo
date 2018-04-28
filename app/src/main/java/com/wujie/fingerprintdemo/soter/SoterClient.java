@@ -43,7 +43,7 @@ public class SoterClient {
         SoterWrapperApi.init(context, new SoterProcessCallback<SoterProcessNoExtResult>() {
             @Override
             public void onResult(@NonNull SoterProcessNoExtResult result) {
-
+                handler.obtainMessage(Constants.FINGER_AUTH_ERROR, result.errMsg).sendToTarget();
             }
         }, param);
     }
